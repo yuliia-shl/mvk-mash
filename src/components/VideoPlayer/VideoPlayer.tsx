@@ -1,7 +1,26 @@
-import HiroTitle from '../HeroTitle/HeroTitle';
+import { useEffect, useState } from 'react';
+import HeroTitle from '../HeroTitle/HeroTitle';
 import SmartButton from '../ui/Button/SmartButton';
+import axios from 'axios';
+import { API_URL } from '../../constants/api';
+import type { HeroItem } from '../../types/hero-types';
 
 const VideoPlayer = () => {
+  const [heroInfo, setheroInfo] = useState<HeroItem[]>([]);
+
+  useEffect(() => {
+    axios
+      .get(`${API_URL}/api/heroes?populate=*`)
+      .then(res => {
+        // console.log(res.data.data); // для дебагу
+        setheroInfo(res.data.data);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const hero = heroInfo[0];
+  if (!hero) return null;
+
   return (
     <div className="relative -mt-17 1xl:-mt-10.5 3xl:-mt-18 4xl:-mt-17 w-full h-screen overflow-hidden bg-[linear-gradient(to_top,_#080808_0%,_#080808_5%,_rgba(8,8,8,0.5)_100%)]">
       <video
@@ -14,17 +33,21 @@ const VideoPlayer = () => {
         style={{ pointerEvents: 'none' }}
         poster="/images/webp/hub-gallery/AleksGolub-05946-2.webp"
       >
-        <source src="/video/heroVideo.webm" type="video/webm" />
-        <source src="/video/heroVideo.mp4" type="video/mp4" />
+        {hero.video.map((vid, index) => (
+          <source key={index} src={`${API_URL}${vid.url}`} type={vid.mime} />
+        ))}
         Ваш браузер не підтримує тег video.
       </video>
 
       {/* Контент поверх відео */}
 
       <div className="section flex flex-col justify-around lg:justify-center lg:items-center h-full">
-        <HiroTitle className="lg:flex flex-col items-center lg:mb-12 4xl:mb-8.5" />
+        <HeroTitle
+          className="lg:flex flex-col items-center lg:mb-12 4xl:mb-8.5"
+          heroInfo={hero}
+        />
         <SmartButton
-          label="Рішення для бізнесу"
+          label={hero.button}
           icon="/images/svg/icons.svg#icon-arrow-up-right"
           iconClassName="w-4.5 h-4.5 ml-16"
           iconStroke="currentColor"
