@@ -12,7 +12,7 @@ const VideoPlayer = () => {
     axios
       .get(`${API_URL}/api/heroes?populate=*`)
       .then(res => {
-        // console.log(res.data.data); // для дебагу
+        console.log(res.data.data); // для дебагу
         setheroInfo(res.data.data);
       })
       .catch(err => console.error(err));
@@ -34,7 +34,7 @@ const VideoPlayer = () => {
         poster="/images/webp/hub-gallery/AleksGolub-05946-2.webp"
       >
         {hero.video.map((vid, index) => (
-          <source key={index} src={`${API_URL}${vid.url}`} type={vid.mime} />
+          <source key={index} src={`${vid.url}`} type={vid.mime} />
         ))}
         Ваш браузер не підтримує тег video.
       </video>
