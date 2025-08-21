@@ -1,21 +1,13 @@
 import { useState, useEffect } from 'react';
 import { modules } from '../../data/hub-modules';
+import { fetchModules } from '../../services/services';
+import type { Locker } from '../../types/modules';
 
 const Modules = () => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [isImageLoaded, setIsImageLoaded] = useState(false);
+  const [module, setModule] = useState<Locker[]>([]);
 
-  const {
-    title,
-    description,
-    size,
-    voltage,
-    characteristic,
-    weight,
-    pictureShort,
-  } = modules[activeIndex];
-
-  // Коли змінюється activeIndex — скидаємо флаг
   useEffect(() => {
     setIsImageLoaded(false);
   }, [activeIndex]);
@@ -28,6 +20,21 @@ const Modules = () => {
     if (sameRow) return 'w-[52px] xs:w-[64px]';
     return 'w-[86px] xs:w-[125.5px]';
   };
+
+  useEffect(() => {
+    fetchModules()
+      .then(data => {
+        setModule(data.lockers);
+        console.log('modules', data.lockers);
+      })
+      .catch(err => console.error(err));
+  }, []);
+
+  const activeModule = module[activeIndex];
+  if (!activeModule) return null;
+
+  const { title, description, size, voltage, power, weight, picture } =
+    activeModule;
 
   return (
     <section id="modules" className="pb-40 1xl:pb-55 3xl:pb-60 4xl:pb-70">
@@ -70,7 +77,7 @@ const Modules = () => {
                       Потужність:
                     </p>
                     <p className="text-lg/[156%] font-semibold xs:text-[22px]/[127%]">
-                      {characteristic}
+                      {power}
                     </p>
                   </li>
                   <li className="flex flex-col gap-1.5 min-w-[230px]">
@@ -86,36 +93,38 @@ const Modules = () => {
             </div>
 
             <picture>
-              <source
-                srcSet={`
-                /images/modules-desktop/${pictureShort}-1x.webp 1x,
-                /images/modules-desktop/${pictureShort}-2x.webp 2x,
-                /images/modules-desktop/${pictureShort}-4x.webp 4x
-              `}
-                media="(min-width: 1440px)"
-                type="image/webp"
-              />
-              <source
-                srcSet={`
-              /images/modules-mobile/${pictureShort}-1x.webp 1x,
-              /images/modules-mobile/${pictureShort}-2x.webp 2x,
-              /images/modules-mobile/${pictureShort}-4x.webp 4x
-            `}
-                media="(min-width: 375px)"
-                type="image/webp"
-              />
+              {picture.formats?.large && (
+                <source
+                  srcSet={`${picture.formats.large.url}`}
+                  media="(min-width: 1024px)"
+                  type={picture.mime}
+                />
+              )}
+              {picture.formats?.medium && (
+                <source
+                  srcSet={`${picture.formats.medium.url}`}
+                  media="(min-width: 768px)"
+                  type={picture.mime}
+                />
+              )}
+              {picture.formats?.small && (
+                <source
+                  srcSet={`${picture.formats.small.url}`}
+                  media="(min-width: 375px)"
+                  type={picture.mime}
+                />
+              )}
               <img
-                src={`/images/modules-mobile/${pictureShort}-1x.webp`}
-                srcSet={`/images/modules-mobile/${pictureShort}-2x.webp 2x, /images/modules-mobile/${pictureShort}-4x.webp 4x`}
-                alt={title}
+                src={`${picture.url}`}
+                alt={picture.alternativeText || title}
                 loading="lazy"
                 onLoad={() => setIsImageLoaded(true)}
                 className={`
-          transition-opacity duration-700 ease-in-out
-          ${isImageLoaded ? 'opacity-100' : 'opacity-0'}
-          w-[375px] xs:w-[520px] lg:w-[952px] 1xl:w-[656px] 3xl:w-[844px] 4xl:w-[945px]
-          h-[260px] xs:h-[362px] lg:h-[516px] 3xl:h-[582px] 4xl:h-[558px]
-        `}
+                transition-opacity duration-700 ease-in-out
+                ${isImageLoaded ? 'opacity-100' : 'opacity-0'}
+                w-[375px] xs:w-[520px] lg:w-[952px] 1xl:w-[656px] 3xl:w-[844px] 4xl:w-[945px]
+                h-[260px] xs:h-[362px] lg:h-[516px] 3xl:h-[582px] 4xl:h-[558px]
+               `}
               />
             </picture>
           </div>
@@ -154,7 +163,7 @@ const Modules = () => {
                           : 'sr-only lg:not-sr-only text-boulder-gray'
                       }`}
                     >
-                      {module.title}
+                      {title}
                     </p>
                   </button>
                 </li>

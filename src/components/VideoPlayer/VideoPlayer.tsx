@@ -1,19 +1,17 @@
 import { useEffect, useState } from 'react';
 import HeroTitle from '../HeroTitle/HeroTitle';
 import SmartButton from '../ui/Button/SmartButton';
-import axios from 'axios';
-import { API_URL } from '../../constants/api';
 import type { HeroItem } from '../../types/hero-types';
+import { fetchHeroInfo } from '../../services/services';
 
 const VideoPlayer = () => {
-  const [heroInfo, setheroInfo] = useState<HeroItem[]>([]);
+  const [heroInfo, setHeroInfo] = useState<HeroItem[]>([]);
 
   useEffect(() => {
-    axios
-      .get(`${API_URL}/api/heroes?populate=*`)
-      .then(res => {
-        console.log(res.data.data); // для дебагу
-        setheroInfo(res.data.data);
+    fetchHeroInfo()
+      .then(data => {
+        setHeroInfo(data);
+        console.log(data);
       })
       .catch(err => console.error(err));
   }, []);
